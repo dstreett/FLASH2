@@ -288,7 +288,7 @@ again:
 		unsigned mismatch_qual_total;
 		int overlap_len = read_1->seq_len - i;
 
-		 
+		/*This modification allows for engulf cases of the read*/
 		compute_mismatch_stats(read_1->seq + i,
 				       read_2->seq + read_offset,
 				       read_1->qual + i,
@@ -298,6 +298,7 @@ again:
 				       &num_mismatches,
 				       &mismatch_qual_total);
 
+		/*Logic to make sure read makes minimum requirements*/
 		if (((!doing_outie && overlap_len >= min_overlap) || (doing_outie && overlap_len >= min_overlap_outie))) {
 			float score_len = (float)min(overlap_len, max_overlap);
 			float qual_score = mismatch_qual_total / score_len;
@@ -321,6 +322,7 @@ again:
 		
 	}
 
+	/*At one point I will remove the goto statments - in non-modified code*/
 	if (allow_outies) {
 		const struct read *tmp = read_1;
 		read_1 = read_2;
@@ -357,14 +359,9 @@ generate_combined_read(const struct read *read_1,
 	               bool was_outie,
 		       bool cap_mismatch_quals)
 {
-//	printf("%s\n", read_1->seq);
-//	printf("%s\n", read_2->seq);
-//	printf("%i\n", was_outie);
 	/* Length of the overlapping part of two reads.  */
 
 	int overlap_len = read_1->seq_len - overlap_begin;
-//	printf("overlap_begin %i\n", overlap_begin);
-//	printf("offset %i\n", read_offset);
 	/* Length of the part of the second read not overlapped with the first
 	 * read.  */
 	int remaining_len = read_2->seq_len - overlap_len;
@@ -392,7 +389,7 @@ generate_combined_read(const struct read *read_1,
 	char * restrict combined_seq;
 	char * restrict combined_qual;
 
-
+	/*Allocates the correct size for each condition*/
 	if (combined_read->seq_bufsz < combined_seq_len || was_outie || read_offset != 0) {
 	
                 combined_read->seq = xrealloc(combined_read->seq,
@@ -414,7 +411,6 @@ generate_combined_read(const struct read *read_1,
  	 *          ------------|---------
  	 *          Only keeps the overlying parts
  	 */
-	//temp variable, will be used later
 
                 combined_seq = combined_read->seq;
 	                combined_qual = combined_read->qual;
@@ -424,7 +420,6 @@ generate_combined_read(const struct read *read_1,
 
 
 	/* Copy the beginning of read 1 (not in the overlapped region).  */
-//	printf("start\n");
 	if (!was_outie && read_offset == 0) {
 		while (overlap_begin--) {
 			*combined_seq++ = *seq_1++;
@@ -440,8 +435,6 @@ generate_combined_read(const struct read *read_1,
 		overlap_len = read_1->seq_len;
 
 	}
-//	printf("before main\n");
-//	printf("overlap_len =%i\n", overlap_len);
 	/* Copy the overlapped region.  */
 	while (overlap_len-- > 0) {
 
@@ -501,7 +494,6 @@ generate_combined_read(const struct read *read_1,
 		qual_1++;
 		qual_2++;
 	}
-	//printf("outfist\n");
 	/* Copy the end of read 2 (not in the overlapped region).  */
 	if (!was_outie && read_offset == 0 && remaining_len > 0) {
 		//printf("%i\n", remaining_len);
@@ -515,7 +507,6 @@ generate_combined_read(const struct read *read_1,
 				*combined_seq++ = *seq_2++;
 			}
 	}*/
-	//printf("out1\n");
 }
 
 /* This is the entry point for the core algorithm of FLASH.  The following
@@ -542,11 +533,22 @@ generate_combined_read(const struct read *read_1,
  *
  */
 
+
+
+
+
+
+/*Function for Junk - removal of primer dimers
+ *50 percent of quality scores must be greater the 2 as default*/
+
 double check_for_junk_read(char * qual_1, char * qual_2, int cut_off) {
 
 	double count = 0;
 	double junk = 0;
 	int i_1 = 0, i_2 = 0;
+
+
+	/*Could vectorize this in the future*/
 	while (qual_1[i_1] != '\0' && qual_2[i_2] != '\0') {
 		if (qual_1[i_1] != '\0') {
 			if (qual_1[i_1]  <= cut_off) {
@@ -564,25 +566,23 @@ double check_for_junk_read(char * qual_1, char * qual_2, int cut_off) {
 			i_2++;
 		}
 	}
-	if (count == 0) {
-		printf("Bad\n");	
-	}
+	/*Both doubles so do not have to worry about interger division*/
 	return junk/count;
 }
+
+
 enum combine_status
 combine_reads(const struct read *read_1, const struct read *read_2,
 	      struct read *combined_read,
 	      const struct combine_params *params)
 {
 	int overlap_begin, read_offset, *overlap_and_offset;
-	//xstrdup(const char *str);
 	enum combine_status status;
 	bool was_outie = false;
 
 	/*check read isn't junk;*/
 	if (params->discard_reads) {
 		double percent_junk = check_for_junk_read(read_1->qual, read_2->qual, params->qual_score_cutoff);
-//		printf("percent junk %f\n", percent_junk);	
 		if (percent_junk*100 > params->percent_cutoff) {
 			return JUNK_READ;
 		}	
