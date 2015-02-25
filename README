@@ -106,16 +106,14 @@ Modications that were undertook:
 	-"Engulf" Case was added
 		-If read 2 (or read 1) was engulfed by the other - they would not overlap
 		-This allows for that to be an overlap - along with a new argument min-overlap-outie
-			
-                          COMMENTS/QUESTIONS/REQUESTS
-
 	-"Threshold Quality" was added
 		-There was some significant problems with primer dimers - this removed most of them
 		-This is one of the first steps for flashdbcamp.
-		
+			
+                          COMMENTS/QUESTIONS/REQUESTS
 
-Send an e-mail to flash.comment@gmail.com
+Send an e-mail to streett.david@gmail.com for information on the modified flash2
 
-Other versions are available from the SourceForge page:
+Original unmodified version is available from the SourceForge page:
 
 https://sourceforge.net/projects/flashpage/
