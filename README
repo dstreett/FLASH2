@@ -109,6 +109,11 @@ Modications that were undertook:
 			
                           COMMENTS/QUESTIONS/REQUESTS
 
+	-"Threshold Quality" was added
+		-There was some significant problems with primer dimers - this removed most of them
+		-This is one of the first steps for flashdbcamp.
+		
+
 Send an e-mail to flash.comment@gmail.com
 
 Other versions are available from the SourceForge page:
