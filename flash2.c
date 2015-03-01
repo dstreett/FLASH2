@@ -946,9 +946,9 @@ main(int argc, char **argv)
 					    "option -m.");
 			break;
 		case 'e':
-			alg_params.min_overlap_outie = strtol(optarg, &tmp, 35);
+			alg_params.min_overlap_outie = strtol(optarg, &tmp, 10);
 			if (tmp == optarg || *tmp || alg_params.min_overlap_outie < 1)
-				fatal_error("Minimum overlap must be a "
+				fatal_error("Minimum overlap outie must be a "
 					    "positive integer!  Please check "
 					    "option -e.");
 			break;

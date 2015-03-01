@@ -251,7 +251,6 @@ pair_align(const struct read *read_1, const struct read *read_2,
 	   int min_overlap, int max_overlap, int min_overlap_outie, float max_mismatch_density,
 	   bool allow_outies, bool * was_outie)
 {
-	//printf("here\n");
 	bool haveN = memchr(read_1->seq, 'N', read_1->seq_len) ||
 		     memchr(read_2->seq, 'N', read_2->seq_len);
 
@@ -339,7 +338,6 @@ again:
 
 
 	if (best_mismatch_density > max_mismatch_density) {
-//		printf("here1\n");
 		position_and_offset[0] = NO_ALIGNMENT;
 		position_and_offset[1] = NO_ALIGNMENT;
 	}
@@ -496,7 +494,6 @@ generate_combined_read(const struct read *read_1,
 	}
 	/* Copy the end of read 2 (not in the overlapped region).  */
 	if (!was_outie && read_offset == 0 && remaining_len > 0) {
-		//printf("%i\n", remaining_len);
 		while (remaining_len--) {
 			*combined_seq++ = *seq_2++;
 			*combined_qual++ = *qual_2++;
