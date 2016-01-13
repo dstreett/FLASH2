@@ -308,7 +308,6 @@ again:
 			{
 				best_qual_score       = qual_score;
 				best_mismatch_density = mismatch_density;
-				printf("%s\n%s\n\n", &read_1->seq[i], &read_2->seq[i]);
 				best_position         = i;
 				best_offset           = read_offset;
 				best_was_outie        = doing_outie;
@@ -416,16 +415,6 @@ generate_combined_read(const struct read *read_1,
 			//nothing fun happens
 		}
 	}
-			printf("%s\n", seq_1);
-			printf("%s\n\n", seq_2);
-			printf("combined_seq  %d\n", combined_seq_len);
-			printf("read 1        %d\n", read_1->seq_len);
-			printf("read 2        %d\n", read_2->seq_len);
-			printf("combined_seq  %d\n", combined_seq_len);
-			printf("overlap_begin %d\n", overlap_begin);
-			printf("remaining_len %d\n", remaining_len);
-			printf("overlap len   %d\n", overlap_len);
-			printf("offset        %d\n", read_offset);
 
 	/*Allocates the correct size for each condition*/
 	

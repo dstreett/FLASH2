@@ -2,6 +2,7 @@
 *.fq
 *.fastq
 *.o
+*.swp
 *.histogram
 *.innie
 *.outie
