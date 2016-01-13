@@ -1,0 +1,8 @@
+*.txt
+*.fq
+*.fastq
+*.o
+*.histogram
+*.innie
+*.outie
+*.hist

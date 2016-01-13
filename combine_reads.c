@@ -281,7 +281,6 @@ again:
 	}
 
 
-
 	for (int i = start; i < end; i++) {
 		unsigned num_mismatches;
 		unsigned mismatch_qual_total;
@@ -309,6 +308,7 @@ again:
 			{
 				best_qual_score       = qual_score;
 				best_mismatch_density = mismatch_density;
+				printf("%s\n%s\n\n", &read_1->seq[i], &read_2->seq[i]);
 				best_position         = i;
 				best_offset           = read_offset;
 				best_was_outie        = doing_outie;
@@ -360,26 +360,12 @@ generate_combined_read(const struct read *read_1,
 	/* Length of the overlapping part of two reads.  */
 
 	int overlap_len = read_1->seq_len - overlap_begin;
+	
 	/* Length of the part of the second read not overlapped with the first
 	 * read.  */
 	int remaining_len = read_2->seq_len - overlap_len;
-
 	int combined_seq_len = read_1->seq_len + remaining_len;
 
-	if (was_outie) {
-		//Case of outie, Engulf case
-		if (read_offset != 0) {
-			combined_seq_len = read_offset + read_1->seq_len;
-		//Outie, remove both sides
-		} else {
-			combined_seq_len = overlap_len;
-		}
-	} else {
-		//Innie, engulf case
-		if (read_offset != 0) {
-			combined_seq_len = read_1->seq_len + read_offset;	
-		}
-	}
 	const char * restrict seq_1 = read_1->seq;
 	const char * restrict seq_2 = read_2->seq;
 	const char * restrict qual_1 = read_1->qual;
@@ -387,22 +373,68 @@ generate_combined_read(const struct read *read_1,
 	char * restrict combined_seq;
 	char * restrict combined_qual;
 
+	if (was_outie) {
+		//Case of outie, Engulf case
+		//So, read 2 is engulfed by read 1
+		if (read_offset != 0) {
+			const struct read *tmp = read_2;
+			read_2 = read_1;
+			read_1 = tmp;
+
+			seq_1 = read_1->seq;
+			seq_2 = read_2->seq;
+			qual_1 = read_1->qual;
+			qual_2 = read_2->qual;
+
+			overlap_begin = read_offset;
+			remaining_len = 0;
+			combined_seq_len = read_2->seq_len+read_offset;
+			overlap_len = read_2->seq_len;
+		} else {
+			combined_seq_len = read_1->seq_len - overlap_begin;
+			seq_1 += overlap_begin;
+			overlap_begin = 0;
+			remaining_len = 0;	
+		}
+
+	} else {
+		//Innie, engulf case
+		if (read_offset != 0) {
+			const struct read *tmp = read_2;
+			read_2 = read_1;
+			read_1 = tmp;
+
+			seq_1 = read_1->seq;
+			seq_2 = read_2->seq;
+			qual_1 = read_1->qual;
+			qual_2 = read_2->qual;
+
+			combined_seq_len = read_1->seq_len;
+			overlap_begin = read_offset;
+			remaining_len = read_1->seq_len - read_2->seq_len - overlap_begin;
+		} else {
+			//nothing fun happens
+		}
+	}
+			printf("%s\n", seq_1);
+			printf("%s\n\n", seq_2);
+			printf("combined_seq  %d\n", combined_seq_len);
+			printf("read 1        %d\n", read_1->seq_len);
+			printf("read 2        %d\n", read_2->seq_len);
+			printf("combined_seq  %d\n", combined_seq_len);
+			printf("overlap_begin %d\n", overlap_begin);
+			printf("remaining_len %d\n", remaining_len);
+			printf("overlap len   %d\n", overlap_len);
+			printf("offset        %d\n", read_offset);
+
 	/*Allocates the correct size for each condition*/
-	if (combined_read->seq_bufsz < combined_seq_len || was_outie || read_offset != 0) {
 	
                 combined_read->seq = xrealloc(combined_read->seq,
                                               combined_seq_len);
                 combined_read->seq_bufsz = combined_seq_len;
-	
-	}
-
-
-
-	if (combined_read->qual_bufsz < combined_seq_len || was_outie || read_offset != 0) {
 		combined_read->qual = xrealloc(combined_read->qual,
 					       combined_seq_len);
 		combined_read->qual_bufsz = combined_seq_len;
-	}
 
 	/* David Modification
  	 * --------|------------
@@ -410,21 +442,21 @@ generate_combined_read(const struct read *read_1,
  	 *          Only keeps the overlying parts
  	 */
 
-                combined_seq = combined_read->seq;
-	                combined_qual = combined_read->qual;
+         combined_seq = combined_read->seq;
+	 combined_qual = combined_read->qual;
 
-                combined_read->seq_len = combined_seq_len;
-                combined_read->qual_len = combined_seq_len;
-
+         combined_read->seq_len = combined_seq_len;
+         combined_read->qual_len = combined_seq_len;
 
 	/* Copy the beginning of read 1 (not in the overlapped region).  */
-	if (!was_outie && read_offset == 0) {
+	//if (read_offset == 0) {
 		while (overlap_begin--) {
 			*combined_seq++ = *seq_1++;
 			*combined_qual++ = *qual_1++;
 		}
-	} else if (read_offset != 0) {
+	//} 
 
+	/*else if (read_offset != 0) {
 		while (read_offset--) {
 			*combined_seq++ = *seq_2++;
 			*combined_qual++ = *qual_2++;
@@ -432,10 +464,12 @@ generate_combined_read(const struct read *read_1,
 		read_offset = -1;
 		overlap_len = read_1->seq_len;
 
-	}
+	}*/
+
+	
 	/* Copy the overlapped region.  */
 	while (overlap_len-- > 0) {
-
+			
 		if (*seq_1 == *seq_2) {
 			/* Same base in both reads.  Take the higher quality
 			 * value. */
@@ -493,13 +527,18 @@ generate_combined_read(const struct read *read_1,
 		qual_2++;
 	}
 	/* Copy the end of read 2 (not in the overlapped region).  */
-	if (!was_outie && read_offset == 0 && remaining_len > 0) {
+	//if (!was_outie && read_offset == 0 && remaining_len > 0) {
 		while (remaining_len--) {
-			*combined_seq++ = *seq_2++;
-			*combined_qual++ = *qual_2++;
+			if (read_offset != 0 && was_outie) {
+				*combined_seq++ = *seq_2++;
+				*combined_qual++ = *qual_2++;
+			} else {
+				*combined_seq++ = *seq_1++;
+				*combined_qual++ = *qual_1++;
+			}
 		}
 	/*This check and sees if there is an offset, but also that the offset wasn't for the innie case*/
-	}/* else if (read_offset > 0) {
+	/*} else if (read_offset > 0) {
 			while (read_offset--) {
 				*combined_seq++ = *seq_2++;
 			}
@@ -586,8 +625,6 @@ combine_reads(const struct read *read_1, const struct read *read_2,
 	}
 	/* Do the alignment.  */
 
-	
-	
 	overlap_and_offset = pair_align(read_1, read_2,
 				   params->min_overlap,
 				   params->max_overlap,
