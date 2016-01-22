@@ -677,10 +677,6 @@ combine_reads(const struct read *read_1, const struct read *read_2,
 	}
 
     if (params->skip_overlap) {
-        if (was_outie) {
-            //memmove(read_1->seq+0, read_1->seq+overlap_begin, sizeof(read_1->seq));
-            //memmove(read_2->seq+0, read_2->seq+10, sizeof(read_2->seq));
-        }
         status = NOT_COMBINED;
     } else {
 	    /* Fill in the combined read.  */
