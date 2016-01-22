@@ -1417,7 +1417,7 @@ main(int argc, char **argv)
 			info("Writing histogram files.");
 
 		if (alg_params.allow_outies) {
-			hist_count = 3;
+			hist_count = 1;
 			hist_init(&_combined_read_lens);
 			hist_combine(&_combined_read_lens, &total_stats->innie_lens);
 			hist_combine(&_combined_read_lens, &total_stats->outie_lens);
