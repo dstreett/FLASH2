@@ -364,7 +364,7 @@ enum {
 	TAB_DELIMITED_OUTPUT_OPTION,
 };
 //David Modification added e --min-overlap-engufl to arguements
-static const char *optstring = "m:M:e:x:p:Or:f:s:IT:o:d:czt:qhvQ:C:D";
+static const char *optstring = "m:M:e:x:p:Or:f:s:IT:o:d:czt:qhvQ:C:DS";
 static const struct option longopts[] = {
 	{"quality-cutoff",          required_argument,  NULL, 'Q'},
 	{"percent-cutoff",          required_argument,  NULL, 'C'},
@@ -376,6 +376,7 @@ static const struct option longopts[] = {
 	{"max-mismatch-density", required_argument,  NULL, 'x'},
 	{"phred-offset",         required_argument,  NULL, 'p'},
 	{"allow-outies",         no_argument,        NULL, 'O'},
+	{"skip-overlap",             required_argument,  NULL, 'S'},
 	{"read-len",             required_argument,  NULL, 'r'},
 	{"fragment-len",         required_argument,  NULL, 'f'},
 	{"fragment-len-stddev",  required_argument,  NULL, 's'},
@@ -824,7 +825,6 @@ combiner_thread_proc(void *_params)
 		put_combined_reads(iohandle, s_combined);
 	else
 		free_read_set(s_combined);
-
 	notify_combiner_terminated(iohandle);
 
 	xfree(params, sizeof(*params));
@@ -869,8 +869,9 @@ main(int argc, char **argv)
 		.min_overlap_outie = 35,
 		.max_mismatch_density = 0.25,
 		.cap_mismatch_quals = false,
-		.allow_outies = false,
+		.allow_outies = true,
 		.discard_reads = true,
+        .skip_overlap = false,
 		.qual_score_cutoff = 2,
 		.percent_cutoff = 50,
 	};
@@ -917,6 +918,8 @@ main(int argc, char **argv)
 	int percent_cutoff     = 50;
 	bool discard_reads        = true;
 	*/
+	/*Adapter trimming overlap is always on*/
+
 	while ((c = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
 		switch (c) {
 		case 'Q':
@@ -991,8 +994,11 @@ main(int argc, char **argv)
 				        "(for Sanger and later Illumina data).");
 			}
 			break;
+		case 'S':
+            alg_params.skip_overlap = true;
+            break;
 		case 'O':
-			alg_params.allow_outies = true;
+            warning("This is a legacy option - adapter trimming is always set to on now - this argument does nothing!");
 			break;
 		case 'f':
 			fragment_len = strtol(optarg, &tmp, 10);

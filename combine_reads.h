@@ -10,7 +10,7 @@ struct read;
 struct combine_params {
 	/* --min-overlap  */
 	int min_overlap;
-
+    
 
 	/* --min-overlap-outie */
 	int min_overlap_outie;
@@ -26,6 +26,9 @@ struct combine_params {
 
 	/* --allow-outies  */
 	bool allow_outies;
+
+    /* --skip-overlap (just does adapter trimming*/
+    bool skip_overlap;
 
 	bool discard_reads;
 	int percent_cutoff;

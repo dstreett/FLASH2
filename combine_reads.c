@@ -371,7 +371,8 @@ generate_combined_read(const struct read *read_1,
 	const char * restrict qual_2 = read_2->qual;
 	char * restrict combined_seq;
 	char * restrict combined_qual;
-
+    printf("Overlap_begin     %d\n", overlap_begin);
+    printf("Read_Offset       %d\n", read_offset);
 	if (was_outie) {
 		//Case of outie, Engulf case
 		//So, read 2 is engulfed by read 1
@@ -675,8 +676,16 @@ combine_reads(const struct read *read_1, const struct read *read_2,
 		 */
 	}
 
-	/* Fill in the combined read.  */
-	generate_combined_read(read_1, read_2, combined_read,
+    if (params->skip_overlap) {
+        if (was_outie) {
+            //memmove(read_1->seq+0, read_1->seq+overlap_begin, sizeof(read_1->seq));
+            //memmove(read_2->seq+0, read_2->seq+10, sizeof(read_2->seq));
+        }
+        status = NOT_COMBINED;
+    } else {
+	    /* Fill in the combined read.  */
+	    generate_combined_read(read_1, read_2, combined_read,
 			       overlap_begin, read_offset, was_outie, params->cap_mismatch_quals);
+    }
 	return status;
 }
