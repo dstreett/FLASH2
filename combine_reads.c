@@ -371,8 +371,7 @@ generate_combined_read(const struct read *read_1,
 	const char * restrict qual_2 = read_2->qual;
 	char * restrict combined_seq;
 	char * restrict combined_qual;
-    printf("Overlap_begin     %d\n", overlap_begin);
-    printf("Read_Offset       %d\n", read_offset);
+
 	if (was_outie) {
 		//Case of outie, Engulf case
 		//So, read 2 is engulfed by read 1
@@ -523,8 +522,8 @@ generate_combined_read(const struct read *read_1,
 				*combined_seq++ = *seq_2++;
 				*combined_qual++ = *qual_2++;
 			} else {
-				*combined_seq++ = *seq_1++;
-				*combined_qual++ = *qual_1++;
+				*combined_seq++ = *seq_2++;
+				*combined_qual++ = *qual_2++;
 			}
 		}
 	/*This check and sees if there is an offset, but also that the offset wasn't for the innie case*/
