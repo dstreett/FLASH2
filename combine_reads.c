@@ -376,6 +376,7 @@ generate_combined_read(const struct read *read_1,
 		//Case of outie, Engulf case
 		//So, read 2 is engulfed by read 1
 		if (read_offset != 0) {
+            
 			const struct read *tmp = read_2;
 			read_2 = read_1;
 			read_1 = tmp;
@@ -399,18 +400,7 @@ generate_combined_read(const struct read *read_1,
 	} else {
 		//Innie, engulf case
 		if (read_offset != 0) {
-			const struct read *tmp = read_2;
-			read_2 = read_1;
-			read_1 = tmp;
 
-			seq_1 = read_1->seq;
-			seq_2 = read_2->seq;
-			qual_1 = read_1->qual;
-			qual_2 = read_2->qual;
-
-			combined_seq_len = read_1->seq_len;
-			overlap_begin = read_offset;
-			remaining_len = read_1->seq_len - read_2->seq_len - overlap_begin;
 		} else {
 			//nothing fun happens
 		}
@@ -418,7 +408,7 @@ generate_combined_read(const struct read *read_1,
 
 	/*Allocates the correct size for each condition*/
 	
-                combined_read->seq = xrealloc(combined_read->seq,
+    combined_read->seq = xrealloc(combined_read->seq,
                                               combined_seq_len);
                 combined_read->seq_bufsz = combined_seq_len;
 		combined_read->qual = xrealloc(combined_read->qual,
@@ -428,7 +418,7 @@ generate_combined_read(const struct read *read_1,
 	/* David Modification
  	 * --------|------------
  	 *          ------------|---------
- 	 *          Only keeps the overlying parts
+ 	 *          Only keeps the overlying parts in outie
  	 */
 
          combined_seq = combined_read->seq;
