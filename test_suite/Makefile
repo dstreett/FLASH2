@@ -16,4 +16,5 @@
 pyScript=testFlash.py
 test:
 	python $(pyScript) 
+	rm -f out.*
 
