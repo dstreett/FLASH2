@@ -371,12 +371,11 @@ generate_combined_read(const struct read *read_1,
 	const char * restrict qual_2 = read_2->qual;
 	char * restrict combined_seq;
 	char * restrict combined_qual;
-
 	if (was_outie) {
+        printf("OUT\n");
 		//Case of outie, Engulf case
 		//So, read 2 is engulfed by read 1
 		if (read_offset != 0) {
-            
 			const struct read *tmp = read_2;
 			read_2 = read_1;
 			read_1 = tmp;
@@ -397,9 +396,26 @@ generate_combined_read(const struct read *read_1,
 			remaining_len = 0;	
 		}
 
-	} else {
+    /*'Typical Case*/
+    } else {
 		//Innie, engulf case
+        printf("INNIE %s\n", read_1->seq);            
 		if (read_offset != 0) {
+            //R1 is shorter than R2 (take first part of read R2)
+
+            const struct read *tmp = read_2;
+            read_2 = read_1;
+            read_1 = tmp;
+			
+            seq_1 = read_1->seq;
+			seq_2 = read_2->seq;
+			qual_1 = read_1->qual;
+			qual_2 = read_2->qual;
+
+            overlap_begin = read_offset;
+			combined_seq_len = read_2->seq_len + read_offset;
+			remaining_len = 0;	
+           
 
 		} else {
 			//nothing fun happens
@@ -434,7 +450,6 @@ generate_combined_read(const struct read *read_1,
 			*combined_qual++ = *qual_1++;
 		}
 	//} 
-
 	/*else if (read_offset != 0) {
 		while (read_offset--) {
 			*combined_seq++ = *seq_2++;
@@ -639,7 +654,6 @@ combine_reads(const struct read *read_1, const struct read *read_2,
 
 	if (overlap_begin == NO_ALIGNMENT)
 		return NOT_COMBINED;
-
 	if (!was_outie) {
 		status = COMBINED_AS_INNIE;
 	} else {
