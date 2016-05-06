@@ -321,8 +321,9 @@ again:
 	}
 
 	/*At one point I will remove the goto statments - in non-modified code*/
+
 	if (allow_outies) {
-		const struct read *tmp = read_1;
+        const struct read *tmp = read_1;
 		read_1 = read_2;
 		read_2 = tmp;
 		allow_outies = false;
@@ -371,12 +372,10 @@ generate_combined_read(const struct read *read_1,
 	const char * restrict qual_2 = read_2->qual;
 	char * restrict combined_seq;
 	char * restrict combined_qual;
-
 	if (was_outie) {
 		//Case of outie, Engulf case
 		//So, read 2 is engulfed by read 1
 		if (read_offset != 0) {
-            
 			const struct read *tmp = read_2;
 			read_2 = read_1;
 			read_1 = tmp;
@@ -397,9 +396,23 @@ generate_combined_read(const struct read *read_1,
 			remaining_len = 0;	
 		}
 
-	} else {
+    /*'Typical Case*/
+    } else {
 		//Innie, engulf case
-		if (read_offset != 0) {
+        if (read_offset != 0) {
+            //R1 is shorter than R2 (take first part of read R2)
+
+            /*ignore first part of read 2*/
+            seq_2 += read_offset;
+            qual_2 += read_offset;
+
+            /*don't take any part of the first read*/
+            overlap_begin = 0;
+
+            /*Seq_2 minus first part of read 1*/
+			combined_seq_len = read_2->seq_len - read_offset;
+			remaining_len = read_2->seq_len - read_1->seq_len - read_offset;
+           
 
 		} else {
 			//nothing fun happens
@@ -434,7 +447,6 @@ generate_combined_read(const struct read *read_1,
 			*combined_qual++ = *qual_1++;
 		}
 	//} 
-
 	/*else if (read_offset != 0) {
 		while (read_offset--) {
 			*combined_seq++ = *seq_2++;
@@ -639,7 +651,6 @@ combine_reads(const struct read *read_1, const struct read *read_2,
 
 	if (overlap_begin == NO_ALIGNMENT)
 		return NOT_COMBINED;
-
 	if (!was_outie) {
 		status = COMBINED_AS_INNIE;
 	} else {
