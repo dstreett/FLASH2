@@ -3,9 +3,10 @@ import os
 import fnmatch
 import sys
 import subprocess
+import filecmp
 
 # find all files, output names
-def findFastqFiles(directory, pattern):
+def find_fastq_files(directory, pattern):
     """Walks the directory structure, appending filenames to an array"""
     filenames = []
     for root, dirs, files in os.walk(directory):
@@ -16,28 +17,53 @@ def findFastqFiles(directory, pattern):
     filenames.sort()
     return filenames
 
-# basic call to the application we are testing
+# basic call to the shell application we are testing
 def sub_process(command):
     return subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+
+def file_compare(command, expected, returned):
+    # testing expected file output
+    subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    return filecmp.cmp(expected, returned)
 
 
 class TestCase(unittest.TestCase):
 
     def test_find_fastq_files_recursively(self):
         """Should return all fastq files from the sub directories"""
-        self.assertEqual(findFastqFiles('fastqFiles', '*.fastq'),
+        self.assertEqual(find_fastq_files('fastqFiles', '*.fastq'),
                          ['fastqFiles/flash2_R1.fastq',
                           'fastqFiles/flash2_R2.fastq'])
 
     # copy this def to make new command tests
     def test_basic_input(self):
         """Should return that basic input works"""
-        myR1file = " fastqFiles/flash2_R1.fastq "
-        myR2file = " fastqFiles/flash2_R2.fastq "
-        additFlags = ""
+        myR1file = " fastqFiles/flash2_R1.fastq"
+        myR2file = " fastqFiles/flash2_R2.fastq"
+        additFlags = " "
         myShellCmd = "../flash2"
         myCommand = myShellCmd+myR1file+myR2file+additFlags
         self.assertIn("2500",sub_process(myCommand))
+
+    def test_basic_input(self):
+        """Should return that basic input works"""
+        myR1file = " fastqFiles/flash2_R1.fastq"
+        myR2file = " fastqFiles/flash2_R2.fastq"
+        additFlags = " "
+        myShellCmd = "../flash2"
+        myCommand = myShellCmd+myR1file+myR2file+additFlags
+        self.assertIn("Innie pairs:   2180",sub_process(myCommand))
+
+    def test_file_compare(self):
+        """Should  return that two files match line for line"""
+        myR1file = " fastqFiles/flash2_R1.fastq"
+        myR2file = " fastqFiles/flash2_R2.fastq"
+        additFlags = " "
+        myShellCmd = "../flash2"
+        myCommand = myShellCmd+myR1file+myR2file+additFlags
+        myExpectedFile = "expected.hist"
+        myReturnedFile = "out.hist"
+        self.assertTrue(file_compare(myCommand, myExpectedFile, myReturnedFile))
 
 
 
