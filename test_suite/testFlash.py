@@ -26,6 +26,14 @@ def file_compare(command, expected, returned):
     subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
     return filecmp.cmp(expected, returned)
 
+def parse_fastq(filename):
+    # output the file to a dictionary
+    with open(filename) as f:
+        lines=f.readlines()
+    head=[item[:-1] for item in lines[::4]] #get rid of '\n'
+    read=[item[:-1] for item in lines[1::4]]
+    qual=[item[:-1] for item in lines[3::4]]
+    return dict(zip(read, qual))
 
 class TestCase(unittest.TestCase):
 
@@ -64,7 +72,6 @@ class TestCase(unittest.TestCase):
         myExpectedFile = "expected.hist"
         myReturnedFile = "out.hist"
         self.assertTrue(file_compare(myCommand, myExpectedFile, myReturnedFile))
-
 
 
 
