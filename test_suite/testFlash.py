@@ -56,7 +56,21 @@ class TestCase(unittest.TestCase):
         additFlags = " -M 150 -Q 20 -C 70"
         myShellCmd = "../flash2"
         myCommand = myShellCmd + myR1file + myR2file + additFlags
-        self.assertIn("Parameters", sub_process(myCommand),
+        self.assertIn("73.50%", sub_process(myCommand),
+                      ("If this returns as an error then either "
+                       "the output has changed or the input "
+                       "has changed. This may indicate a change "
+                       "in the algorithm since this tests for percentage "
+                       "of combined."))
+
+    def test_for_expected_output(self):
+        """Should return that basic input works"""
+        myR1file = " fastqFiles/flash2_R1.fastq"
+        myR2file = " fastqFiles/flash2_R2.fastq"
+        additFlags = " -M 150 -Q 20 -C 70"
+        myShellCmd = "../flash2"
+        myCommand = myShellCmd + myR1file + myR2file + additFlags
+        self.assertIn("73.50%", sub_process(myCommand),
                       ("If this returns as an error then either "
                        "the output has changed or the input "
                        "has changed."))
