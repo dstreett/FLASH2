@@ -44,7 +44,8 @@ class TestCase(unittest.TestCase):
     def test_find_fastq_files_recursively(self):
         """Should return all fastq files from the sub directories"""
         self.assertEqual(find_fastq_files('fastqFiles', '*.fastq'),
-                         ['fastqFiles/flash2_R1.fastq',
+                         ['fastqFiles/extendedFrags.fastq',
+                          'fastqFiles/flash2_R1.fastq',
                           'fastqFiles/flash2_R2.fastq'])
 
     # copy this def to make new command tests
@@ -52,31 +53,34 @@ class TestCase(unittest.TestCase):
         """Should return that basic input works"""
         myR1file = " fastqFiles/flash2_R1.fastq"
         myR2file = " fastqFiles/flash2_R2.fastq"
-        additFlags = " "
+        additFlags = " -M 150 -Q 20 -C 70"
         myShellCmd = "../flash2"
         myCommand = myShellCmd + myR1file + myR2file + additFlags
-        self.assertIn("2500", sub_process(myCommand))
+        self.assertIn("Parameters", sub_process(myCommand),
+                      ("If this returns as an error then either "
+                       "the output has changed or the input "
+                       "has changed."))
 
-    def test_basic_output(self):
-        """Should return that basic output works"""
-        myR1file = " fastqFiles/flash2_R1.fastq"
-        myR2file = " fastqFiles/flash2_R2.fastq"
-        additFlags = " "
-        myShellCmd = "../flash2"
-        myCommand = myShellCmd + myR1file + myR2file + additFlags
-        self.assertIn("Innie pairs:   2180", sub_process(myCommand))
+    def test_find_output_files_exist(self):
+        """Should return all fastq files, output and input"""
+        self.assertEqual(find_fastq_files('.', '*.fastq'),
+                         ['./.flash.extendedFrags.fastq',
+                          './.flash.notCombined_1.fastq',
+                          './.flash.notCombined_2.fastq',
+                          './fastqFiles/extendedFrags.fastq',
+                          './fastqFiles/flash2_R1.fastq',
+                          './fastqFiles/flash2_R2.fastq',
+                          './out.extendedFrags.fastq',
+                          './out.notCombined_1.fastq',
+                          './out.notCombined_2.fastq'])
 
-    def test_file_compare(self):
-        """Should  return that two files match line for line"""
-        myR1file = " fastqFiles/flash2_R1.fastq"
-        myR2file = " fastqFiles/flash2_R2.fastq"
-        additFlags = " "
-        myShellCmd = "../flash2"
-        myCommand = myShellCmd + myR1file + myR2file + additFlags
-        myExpectedFile = "expected.hist"
-        myReturnedFile = "out.hist"
-        self.assertTrue(file_compare(
-            myCommand, myExpectedFile, myReturnedFile))
+    def test_item_from_one_exists_in_two(self):
+        """Tests if the first entry in the expected output is in the input"""
+        data01 = parse_fastq("fastqFiles/extendedFrags.fastq")
+        data02 = parse_fastq("out.extendedFrags.fastq")
+        self.assertTrue(data01.items()[0][0] in data02,
+                        "The first entry was in expected output "
+                        "is not found in the testcase")
 
 
 if __name__ == '__main__':
