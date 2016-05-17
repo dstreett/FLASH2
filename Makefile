@@ -11,6 +11,7 @@ CFLAGS += -O2 -Wall -std=c99 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64
 LDLIBS := -lz -lpthread
 OBJ    := combine_reads.o flash2.o iostream.o read_io.o read_queue.o read_util.o util.o
 EXE    := flash2
+TDIR=test_suite/
 
 $(EXE):$(OBJ)
 
@@ -18,3 +19,6 @@ clean:
 	rm -f $(OBJ) $(EXE)
 
 .PHONY: clean
+
+test:
+	cd $(TDIR); make; cd -
